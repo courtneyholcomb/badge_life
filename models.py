@@ -1,14 +1,9 @@
 """Models for R00tz27 game."""
 
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 
-app = Flask(__name__)
-
 db = SQLAlchemy(app)
-
-app.secret_key = "lafoijasfoaijspofjas"
 
 
 def connect_to_db(app, db_name):
@@ -64,9 +59,3 @@ class Game(db.Model):
 
         return f"""Game game_id={ self.game_id } player1={ self.player1_id } 
                    player2={ self.player2_id }"""
-
-
-if __name__ == "__main__":
-    connect_to_db(app, "r00tz27")
-    db.create_all()
-
