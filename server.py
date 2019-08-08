@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request, render_template, flash, redirect
 from models import db, Player, Game, Team, GamePlayer, connect_to_db
 from flask_debugtoolbar import DebugToolbarExtension
