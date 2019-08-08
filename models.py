@@ -1,5 +1,6 @@
 """Models for R00tz27 game."""
 
+import os
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -9,7 +10,9 @@ db = SQLAlchemy()
 def connect_to_db(app, db_name):
     """Connect to database."""
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql:///r00tz27"
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+        "DATABASE_URL", "postgresql:///r00tz27"
+    )
     app.config["SQLALCHEMY_ECHO"] = True
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 

@@ -4,7 +4,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
 
-app.secret_key = "lafoijasfoaijspofjas"
+app.secret_key = os.environ.get("SECRET_KEY", "trustno1")
 
 
 def seed_teams():
