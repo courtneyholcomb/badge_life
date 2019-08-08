@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<form action="/register" method="POST">
+    <label>Username: <input type="text" name="username" id="username"></label>
+    <br>
+    <label>Team: <select name="team_id">
+        <option value="1">Tiger</option>
+        <option value="2">Wolf</option>
+    </select></label>
+    <input type="submit" name="Register">
+</form>
+{% endblock %}

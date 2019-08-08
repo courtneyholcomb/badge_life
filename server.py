@@ -1,5 +1,6 @@
-from flask import Flask, request
+from flask import Flask, request, render_template, flash, redirect
 from models import db, Player, Game, Team, GamePlayer, connect_to_db
+from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
 
@@ -21,29 +22,51 @@ def seed_teams():
     db.session.commit()
 
 
-@app.route("/add_player", methods=['POST'])
+@app.route("/")
+def show_homepage():
+    """Show homepage."""
+
+    return render_template("homepage.html")
+
+@app.route("/register", methods=['GET'])
+def show_registration_page():
+    """Show form to register new player."""
+
+    usernames = [player.username for player in Player.query.all()]
+
+    return render_template("register.html", usernames=usernames)
+
+
+@app.route("/register", methods=['POST'])
 def add_player():
     """Add a new player to the r00tz database."""
 
     username = request.form.get("username")
-    team_id = request.form.get("team_id")
+    team_id = int(request.form.get("team_id"))
 
     if (username,) not in db.session.query(Player.username).all():
         player_record = Player(username=username, team_id=team_id)
-        db.session.add(user_record)
+        db.session.add(player_record)
         db.session.commit()
+
+        flash(f"New player added successfully! Username: {username}")
+
+    else:
+        flash("That username is already taken. Please choose another.")
+
+    return redirect("/register")
 
 
 @app.route("/record_game", methods=['POST'])
 def record_game():
     """Add a new game to the r00tz database."""
 
-    challenge = request.form.get("challenge")
-    player1_id = request.form.get("player1_id")
-    player1_win = request.form.get("player1_win")
-    player2_id = request.form.get("player2_id")
-    player2_win = request.form.get("player2_win")
-    initiated_at = request.form.get("initiated_at")
+    # challenge = request.form.get("challenge")
+    # player1_id = request.form.get("player1_id")
+    # player1_win = request.form.get("player1_win")
+    # player2_id = request.form.get("player2_id")
+    # player2_win = request.form.get("player2_win")
+    # initiated_at = request.form.get("initiated_at")
 
     # add game to games table
     game_record = Game(challenge=challenge, player1_id=player1_id,
@@ -88,10 +111,25 @@ def record_game():
     db.session.commit()
 
 
+@app.route("/leaderboard", methods=['GET'])
+def show_leaderboard():
+    """Show team and player rankings."""
+
+    players = Player.query.order_by(Player.games_won.desc()).all()
+    teams = Team.query.order_by(Team.games_won.desc()).all()
+
+    return render_template("leaderboard.html", players=players, teams=teams)
+
 
 if __name__ == "__main__":
     connect_to_db(app, "r00tz27")
     db.create_all()
     seed_teams()
+
+    app.debug = True
+    app.jinja_env.auto_reload = app.debug
+    DebugToolbarExtension(app)
+
+    app.run(port=5000, host='0.0.0.0')
 
 
