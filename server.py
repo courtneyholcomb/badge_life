@@ -15,10 +15,10 @@ def seed_teams():
         team1 = Team(team_id=1, name="tiger")
         db.session.add(team1)
 
-    if "wolf" not in team_names:  
+    if "wolf" not in team_names:
         team2 = Team(team_id=2, name="wolf")
         db.session.add(team2)
-    
+
     db.session.commit()
 
 
@@ -28,7 +28,8 @@ def show_homepage():
 
     return render_template("homepage.html")
 
-@app.route("/register", methods=['GET'])
+
+@app.route("/register", methods=["GET"])
 def show_registration_page():
     """Show form to register new player."""
 
@@ -37,7 +38,7 @@ def show_registration_page():
     return render_template("register.html", usernames=usernames)
 
 
-@app.route("/register", methods=['POST'])
+@app.route("/register", methods=["POST"])
 def add_player():
     """Add a new player to the r00tz database."""
 
@@ -57,7 +58,7 @@ def add_player():
     return redirect("/register")
 
 
-@app.route("/record_game", methods=['POST'])
+@app.route("/record_game", methods=["POST"])
 def record_game():
     """Add a new game to the r00tz database."""
 
@@ -69,10 +70,15 @@ def record_game():
     # initiated_at = request.form.get("initiated_at")
 
     # add game to games table
-    game_record = Game(challenge=challenge, player1_id=player1_id,
-                       player1_win=player1_win, player2_id=player2_id, 
-                       player2_win=player2_win, initiated_at=initiated_at)
-    
+    game_record = Game(
+        challenge=challenge,
+        player1_id=player1_id,
+        player1_win=player1_win,
+        player2_id=player2_id,
+        player2_win=player2_win,
+        initiated_at=initiated_at,
+    )
+
     # add games to players' games_played
     player1 = Player.query.get(player1_id)
     player2 = Player.query.get(player2_id)
@@ -111,7 +117,7 @@ def record_game():
     db.session.commit()
 
 
-@app.route("/leaderboard", methods=['GET'])
+@app.route("/leaderboard", methods=["GET"])
 def show_leaderboard():
     """Show team and player rankings."""
 
@@ -130,6 +136,5 @@ if __name__ == "__main__":
     app.jinja_env.auto_reload = app.debug
     DebugToolbarExtension(app)
 
-    app.run(port=5000, host='0.0.0.0')
-
+    app.run(port=5000, host="0.0.0.0")
 

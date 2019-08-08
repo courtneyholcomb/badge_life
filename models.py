@@ -28,16 +28,14 @@ class Player(db.Model):
     games_played = db.Column(db.Integer, default=0, nullable=False)
     games_won = db.Column(db.Integer, default=0, nullable=False)
 
-
     team = db.relationship("Team", backref="players", uselist=False)
     games = db.relationship("Game", secondary="game_players", backref="players")
 
     def __repr__(self):
         """Show info about player."""
 
-        return f"<Player player_id={ self.player_id } "\
-               f"username={ self.username }>"
-        
+        return f"<Player player_id={ self.player_id } " f"username={ self.username }>"
+
 
 class Game(db.Model):
     """R00tz27 game."""
@@ -52,16 +50,20 @@ class Game(db.Model):
     player2_win = db.Column(db.Boolean)
     initiated_at = db.Column(db.DateTime)
 
-    player1 = db.relationship("Player", 
-                              primaryjoin='Game.player1_id == Player.player_id')
-    player2 = db.relationship("Player", 
-                              primaryjoin='Game.player2_id == Player.player_id')
+    player1 = db.relationship(
+        "Player", primaryjoin="Game.player1_id == Player.player_id"
+    )
+    player2 = db.relationship(
+        "Player", primaryjoin="Game.player2_id == Player.player_id"
+    )
 
     def __repr__(self):
         """Show game details."""
 
-        return f"<Game game_id={ self.game_id } player1={ self.player1_id } "\
-               f"player2={ self.player2_id }>"
+        return (
+            f"<Game game_id={ self.game_id } player1={ self.player1_id } "
+            f"player2={ self.player2_id }>"
+        )
 
 
 class Team(db.Model):
@@ -90,8 +92,5 @@ class GamePlayer(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey("players.player_id"))
 
     game = db.relationship("Game", uselist=False, backref="game_player_objects")
-    player = db.relationship("Player", uselist=False, 
-                             backref="game_player_objects")
-
-
+    player = db.relationship("Player", uselist=False, backref="game_player_objects")
 
