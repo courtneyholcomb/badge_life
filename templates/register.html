@@ -3,16 +3,19 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<form action="/register" method="POST">
-  <label>Username: <input type="text" name="username" id="username"></label>
+<form name="register" action="/register" method="POST">
+  <label>Name: <input type="text" name="name"></label>
+  <br>
+  <label>Mac: <input type="text" name="mac"></label>
   <br>
   <label>Team:
-    <select name="team_id">
+    <select name="team_name">
       {% for team in teams %}
-      <option value="{{ team.id }}">{{ team.name|capitalize }}</option>
+      <option value="{{ team.name }}">{{ team.name|capitalize }}</option>
       {% endfor %}
     </select>
   </label>
   <input type="submit" name="Register">
+  <div id="result"></div>
 </form>
 {% endblock %}

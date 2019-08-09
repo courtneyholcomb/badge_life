@@ -1,8 +1,10 @@
+import json
 import os
 
-from flask import Flask, request, render_template, flash, redirect
+from flask import Flask, flash, redirect, render_template, request
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 
 app = Flask(__name__)
 
@@ -39,9 +41,9 @@ class Player(db.Model):
     __tablename__ = "players"
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
+    name = db.Column(db.String(255), nullable=False, unique=True)
     mac = db.Column(db.String(255), nullable=False, unique=True)
-    team_id = db.Column(db.Integer, db.ForeignKey("teams.id"), nullable=False)
+    team_name = db.Column(db.String(255), db.ForeignKey("teams.name"), nullable=False)
 
     # games = # TODO
 
@@ -105,21 +107,35 @@ def show_registration_page():
 @app.route("/register", methods=["POST"])
 def add_player():
     """Add a new player to the r00tz database."""
+    try:
+        name = request.form["name"]
+        mac = request.form["mac"]
+        team_name = request.form["team_name"]
+    except KeyError:
+        return (
+            json.dumps({"error": "Required fields: name, mac, team_name"}),
+            400,
+            {"ContentType": "application/json"},
+        )
 
-    username = request.form.get("username")
-    team_id = int(request.form.get("team_id"))
+    if Player.query.filter(or_(Player.name == name, Player.mac == mac)).count() > 0:
+        return (
+            json.dumps({"error": "Player name & mac must be unique"}),
+            400,
+            {"ContentType": "application/json"},
+        )
 
-    if (username,) not in db.session.query(Player.username).all():
-        player_record = Player(username=username, team_id=team_id)
+    try:
+        player_record = Player(name=name, mac=mac, team_name=team_name)
         db.session.add(player_record)
         db.session.commit()
-
-        flash(f"New player added successfully! Username: {username}")
-
-    else:
-        flash("That username is already taken. Please choose another.")
-
-    return redirect("/register")
+        return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
+    except Exception as err:
+        return (
+            json.dumps({"error": str(err)}),
+            400,
+            {"ContentType": "application/json"},
+        )
 
 
 @app.route("/record_game", methods=["POST"])
