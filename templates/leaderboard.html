@@ -6,12 +6,12 @@
 Team Rankings:
 <br>
 <ol>
-    {% for team in teams %}
-        <li>
-            <b>{{ team.name }}</b> (team_id = {{team.team_id}}): 
-            {{ team.games_won }} wins, {{ team.games_played }} games played
-        </li>
-    {% endfor %}
+  {% for team in teams %}
+  <li>
+    <b>{{ team.name }}</b> (team_id = {{team.team_id}}):
+    {{ team.games_won }} wins, {{ team.games_played }} games played
+  </li>
+  {% endfor %}
 </ol>
 
 <br>
@@ -21,12 +21,12 @@ Team Rankings:
 Player Rankings:
 <br>
 <ol>
-    {% for player in players %}
-        <li>
-            <b>{{ player.username }}</b> (team = {{ player.team.name }}):
-            {{ player.games_won }} wins, {{ player.games_played }} games played
-        </li>
-    {% endfor %}
+  {% for player in players %}
+  <li>
+    <b>{{ player.username }}</b> (team = {{ player.team.name }}):
+    {{ player.games_won }} wins, {{ player.games_played }} games played
+  </li>
+  {% endfor %}
 </ol>
 
 {% endblock %}
