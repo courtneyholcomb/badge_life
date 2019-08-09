@@ -45,8 +45,6 @@ class Player(db.Model):
     mac = db.Column(db.String(255), nullable=False, unique=True)
     team_name = db.Column(db.String(255), db.ForeignKey("teams.name"), nullable=False)
 
-    # games = # TODO
-
     def __repr__(self):
         """Show info about player."""
         return f"<Player id={ self.id } name={ self.name }>"
@@ -95,13 +93,16 @@ def seed_teams():
 @app.route("/register", methods=["POST"])
 def add_player():
     """Add a new player to the r00tz database."""
-
     try:
-        name = request.form["name"]
-        mac = request.form["mac"]
-        team_name = request.form["team_name"]
+        player = json.loads(request.values["json"])
+
+        name = player["name"]
+        mac = player["mac"]
+        team_name = player["team_name"]
+    except json.decoder.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON"}), 400
     except KeyError:
-        return jsonify({"error": "Required fields: name, mac, team_name"}), 400
+        return jsonify({"error": "Missing required field"}), 400
 
     if Player.query.filter(or_(Player.name == name, Player.mac == mac)).count() > 0:
         return jsonify({"error": "Player name & mac must be unique"}), 400
@@ -115,16 +116,21 @@ def add_player():
         return jsonify({"error": str(err)}), 400
 
 
-@app.route("/record_game", methods=["POST"])
-def record_game():
-    """Add a new game to the r00tz database."""
+@app.route("/record_games", methods=["POST"])
+def record_games():
+    """Add new games to the r00tz database."""
     try:
+        games = json.loads(request.values["json"])
+    except json.decoder.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON"}), 400
+
+    for game in games:
         game_record = Game(
-            challenge=request.form["challenge"],
-            player1_mac=request.form["my_mac"],
-            player1_win=request.form["i_won"] == "True",
-            player2_mac=request.form["opponent_mac"],
-            player2_win=request.form["they_won"] == "True",
+            challenge=game["challenge"],
+            player1_mac=game["my_mac"],
+            player1_win=game["i_won"],
+            player2_mac=game["opponent_mac"],
+            player2_win=game["they_won"],
         )
 
         # ensure consistent ordering of player1 and player2
@@ -141,12 +147,7 @@ def record_game():
 
         db.session.add(game_record)
         db.session.commit()
-
-        return jsonify({"success": True})
-    except KeyError:
-        return jsonify({"error": "Missing required field"}), 400
-    except Exception as err:
-        return jsonify({"error": str(err)}), 400
+    return jsonify({"success": True})
 
 
 @app.route("/", methods=["GET"])
