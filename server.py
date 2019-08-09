@@ -45,6 +45,13 @@ class Player(db.Model):
     mac = db.Column(db.String(255), nullable=False, unique=True)
     team_name = db.Column(db.String(255), db.ForeignKey("teams.name"), nullable=False)
 
+    player1 = db.relationship(
+        "Game", backref="games_as_p1", foreign_keys="Game.player1_mac"
+    )
+    player2 = db.relationship(
+        "Game", backref="games_as_p2", foreign_keys="Game.player2_mac"
+    )
+
     def __repr__(self):
         """Show info about player."""
         return f"<Player id={ self.id } name={ self.name }>"
@@ -125,28 +132,31 @@ def record_games():
         return jsonify({"error": "Invalid JSON"}), 400
 
     for game in games:
-        game_record = Game(
-            challenge=game["challenge"],
-            player1_mac=game["my_mac"],
-            player1_win=game["i_won"],
-            player2_mac=game["opponent_mac"],
-            player2_win=game["they_won"],
-        )
-
-        # ensure consistent ordering of player1 and player2
-        if not game_record.player1_mac > game_record.player2_mac:
-            # swap the two
-            game_record.player1_mac, game_record.player2_mac = (
-                game_record.player2_mac,
-                game_record.player1_mac,
-            )
-            game_record.player1_win, game_record.player2_win = (
-                game_record.player2_win,
-                game_record.player1_win,
+        try:
+            game_record = Game(
+                challenge=game["challenge"],
+                player1_mac=game["my_mac"],
+                player1_win=game["i_won"],
+                player2_mac=game["opponent_mac"],
+                player2_win=game["they_won"],
             )
 
-        db.session.add(game_record)
-        db.session.commit()
+            # ensure consistent ordering of player1 and player2
+            if not game_record.player1_mac > game_record.player2_mac:
+                # swap the two
+                game_record.player1_mac, game_record.player2_mac = (
+                    game_record.player2_mac,
+                    game_record.player1_mac,
+                )
+                game_record.player1_win, game_record.player2_win = (
+                    game_record.player2_win,
+                    game_record.player1_win,
+                )
+
+            db.session.add(game_record)
+            db.session.commit()
+        except Exception as err:
+            print(err)  # that's all. don't fail uploading everything.
     return jsonify({"success": True})
 
 
@@ -156,8 +166,11 @@ def show_leaderboard():
 
     players = Player.query.all()
     teams = Team.query.all()
+    games = Game.query.all()
 
-    return render_template("leaderboard.html", players=players, teams=teams)
+    return render_template(
+        "leaderboard.html", players=players, teams=teams, games=games
+    )
 
 
 if __name__ == "__main__":

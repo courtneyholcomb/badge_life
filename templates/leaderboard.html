@@ -1,32 +1,73 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
 
-{% block title %}Leaderboard{% endblock %}
+<head>
+  <title>
+    r00tz27
+  </title>
+  <!-- <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
+  <link href="https://unpkg.com/nes.css/css/nes.css" rel="stylesheet" /> -->
+  <style>
+    html,
+    body,
+    pre,
+    code,
+    kbd,
+    samp {
+      /* font-family: 'Press Start 2P', cursive; */
 
-{% block content %}
-Team Rankings:
-<br>
-<ol>
-  {% for team in teams %}
-  <li>
-    <b>{{ team.name }}</b> (team_id = {{team.id}}):
-    {{ team.games_won }} wins, {{ team.games_played }} games played
-  </li>
-  {% endfor %}
-</ol>
+    }
 
-<br>
-<br>
-<br>
+  </style>
 
-Player Rankings:
-<br>
-<ol>
-  {% for player in players %}
-  <li>
-    <b>{{ player.name }}</b> (team = {{ player.team.name }}):
-    {{ player.games_won }} wins, {{ player.games_played }} games played
-  </li>
-  {% endfor %}
-</ol>
+  <script src="jquery-3.4.1.min.js"></script>
+</head>
 
-{% endblock %}
+<body>
+  Team Rankings:
+  <br>
+  <ol>
+    {% for team in teams %}
+    <li>
+      <b>{{ team.name }}</b> (team_id = {{team.id}})
+    </li>
+    {% endfor %}
+  </ol>
+
+  <br>
+  <br>
+  <br>
+
+  Player Rankings:
+  <br>
+  <ol>
+    {% for player in players %}
+    <li>
+      <b>{{ player.name }}</b> (team = {{ player.team.name }})
+    </li>
+    {% endfor %}
+  </ol>
+  Games:
+  <br>
+  <ol>
+    {% for game in games %}
+    <li>
+      <b>{{ game.player1.name }}</b> ({% if game.player1_win %}won{% else %}lost{% endif %}) vs.
+      <b>{{ game.player2.name }}</b> ({% if game.player2_win %}won{% else %}lost{% endif %})
+    </li>
+    {% endfor %}
+  </ol>
+</body>
+<!-- 
+<body>
+  <div class="container">
+    <main class="main-content">
+      <section class="topic">
+        <h2 id="about"><a href="#about">#</a>About</h2>
+        <p>NES.css is NES-style (8bit-like) CSS Framework.</p>
+      </section>
+    </main>
+  </div> -->
+</body>
+
+</html>
