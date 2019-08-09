@@ -92,21 +92,10 @@ def seed_teams():
     db.session.commit()
 
 
-@app.route("/")
-def show_homepage():
-    """Show homepage."""
-    return render_template("homepage.html")
-
-
-@app.route("/register", methods=["GET"])
-def show_registration_page():
-    """Show form to register new player."""
-    return render_template("register.html", teams=Team.query.all())
-
-
 @app.route("/register", methods=["POST"])
 def add_player():
     """Add a new player to the r00tz database."""
+
     try:
         name = request.form["name"]
         mac = request.form["mac"]
@@ -160,7 +149,7 @@ def record_game():
         return jsonify({"error": str(err)}), 400
 
 
-@app.route("/leaderboard", methods=["GET"])
+@app.route("/", methods=["GET"])
 def show_leaderboard():
     """Show team and player rankings."""
 
