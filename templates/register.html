@@ -6,10 +6,13 @@
 <form action="/register" method="POST">
   <label>Username: <input type="text" name="username" id="username"></label>
   <br>
-  <label>Team: <select name="team_id">
-      <option value="1">Tiger</option>
-      <option value="2">Wolf</option>
-    </select></label>
+  <label>Team:
+    <select name="team_id">
+      {% for team in teams %}
+      <option value="{{ team.id }}">{{ team.name|capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
   <input type="submit" name="Register">
 </form>
 {% endblock %}

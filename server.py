@@ -93,17 +93,13 @@ def seed_teams():
 @app.route("/")
 def show_homepage():
     """Show homepage."""
-
     return render_template("homepage.html")
 
 
 @app.route("/register", methods=["GET"])
 def show_registration_page():
     """Show form to register new player."""
-
-    usernames = [player.username for player in Player.query.all()]
-
-    return render_template("register.html", usernames=usernames)
+    return render_template("register.html", teams=Team.query.all())
 
 
 @app.route("/register", methods=["POST"])
