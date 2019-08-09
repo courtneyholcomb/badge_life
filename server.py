@@ -45,11 +45,11 @@ class Player(db.Model):
     mac = db.Column(db.String(255), nullable=False, unique=True)
     team_name = db.Column(db.String(255), db.ForeignKey("teams.name"), nullable=False)
 
-    player1 = db.relationship(
-        "Game", backref="games_as_p1", foreign_keys="Game.player1_mac"
+    games_as_p1 = db.relationship(
+        "Game", backref="player1", foreign_keys="Game.player1_mac"
     )
-    player2 = db.relationship(
-        "Game", backref="games_as_p2", foreign_keys="Game.player2_mac"
+    games_as_p2 = db.relationship(
+        "Game", backref="player2", foreign_keys="Game.player2_mac"
     )
 
     def __repr__(self):
