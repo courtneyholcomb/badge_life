@@ -8,7 +8,7 @@ Team Rankings:
 <ol>
   {% for team in teams %}
   <li>
-    <b>{{ team.name }}</b> (team_id = {{team.team_id}}):
+    <b>{{ team.name }}</b> (team_id = {{team.id}}):
     {{ team.games_won }} wins, {{ team.games_played }} games played
   </li>
   {% endfor %}
@@ -23,7 +23,7 @@ Player Rankings:
 <ol>
   {% for player in players %}
   <li>
-    <b>{{ player.username }}</b> (team = {{ player.team.name }}):
+    <b>{{ player.name }}</b> (team = {{ player.team.name }}):
     {{ player.games_won }} wins, {{ player.games_played }} games played
   </li>
   {% endfor %}

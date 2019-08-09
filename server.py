@@ -1,7 +1,7 @@
 import json
 import os
 
-from flask import Flask, flash, redirect, render_template, request
+from flask import Flask, flash, redirect, render_template, request, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
@@ -58,23 +58,23 @@ class Game(db.Model):
     __tablename__ = "games"
     __table_args__ = (
         db.UniqueConstraint(
-            "challenge", "player1_id", "player2_id", name="unique_players_challenge"
+            "challenge", "player1_mac", "player2_mac", name="unique_players_challenge"
         ),
     )
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     challenge = db.Column(db.Integer, nullable=False)
 
-    player1_id = db.Column(db.Integer, db.ForeignKey("players.id"))
+    player1_mac = db.Column(db.String(255), db.ForeignKey("players.mac"))
     player1_win = db.Column(db.Boolean)
-    player2_id = db.Column(db.Integer, db.ForeignKey("players.id"))
+    player2_mac = db.Column(db.String(255), db.ForeignKey("players.mac"))
     player2_win = db.Column(db.Boolean)
 
-    played_at = db.Column(db.DateTime)
+    # played_at = db.Column(db.DateTime)
 
     def __repr__(self):
         """Show game details."""
-        return f"<Game id={ self.id } player1={ self.player1_id } player2={ self.player2_id }>"
+        return f"<Game id={ self.id } player1={ self.player1_mac } player2={ self.player2_mac }>"
 
 
 def seed_teams():
@@ -112,97 +112,60 @@ def add_player():
         mac = request.form["mac"]
         team_name = request.form["team_name"]
     except KeyError:
-        return (
-            json.dumps({"error": "Required fields: name, mac, team_name"}),
-            400,
-            {"ContentType": "application/json"},
-        )
+        return jsonify({"error": "Required fields: name, mac, team_name"}), 400
 
     if Player.query.filter(or_(Player.name == name, Player.mac == mac)).count() > 0:
-        return (
-            json.dumps({"error": "Player name & mac must be unique"}),
-            400,
-            {"ContentType": "application/json"},
-        )
+        return jsonify({"error": "Player name & mac must be unique"}), 400
 
     try:
         player_record = Player(name=name, mac=mac, team_name=team_name)
         db.session.add(player_record)
         db.session.commit()
-        return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
+        return jsonify({"success": True})
     except Exception as err:
-        return (
-            json.dumps({"error": str(err)}),
-            400,
-            {"ContentType": "application/json"},
-        )
+        return jsonify({"error": str(err)}), 400
 
 
 @app.route("/record_game", methods=["POST"])
 def record_game():
     """Add a new game to the r00tz database."""
+    try:
+        game_record = Game(
+            challenge=request.form["challenge"],
+            player1_mac=request.form["my_mac"],
+            player1_win=request.form["i_won"] == "True",
+            player2_mac=request.form["opponent_mac"],
+            player2_win=request.form["they_won"] == "True",
+        )
 
-    # challenge = request.form.get("challenge")
-    # player1_id = request.form.get("player1_id")
-    # player1_win = request.form.get("player1_win")
-    # player2_id = request.form.get("player2_id")
-    # player2_win = request.form.get("player2_win")
-    # initiated_at = request.form.get("initiated_at")
+        # ensure consistent ordering of player1 and player2
+        if not game_record.player1_mac > game_record.player2_mac:
+            # swap the two
+            game_record.player1_mac, game_record.player2_mac = (
+                game_record.player2_mac,
+                game_record.player1_mac,
+            )
+            game_record.player1_win, game_record.player2_win = (
+                game_record.player2_win,
+                game_record.player1_win,
+            )
 
-    # add game to games table
-    game_record = Game(
-        challenge=challenge,
-        player1_id=player1_id,
-        player1_win=player1_win,
-        player2_id=player2_id,
-        player2_win=player2_win,
-        initiated_at=initiated_at,
-    )
+        db.session.add(game_record)
+        db.session.commit()
 
-    # add games to players' games_played
-    player1 = Player.query.get(player1_id)
-    player2 = Player.query.get(player2_id)
-
-    # write columns explicitly (instead of += 1) to avoid race conditions
-    player1.games_played = player1.games_played + 1
-    player2.games_played = player2.games_played + 1
-
-    # increment games won for winners
-    if player1_win:
-        player1.games_won = player1.games_won + 1
-    if player2_win:
-        player2.games_won = player2.games_won + 1
-
-    # if opposing teams, increment teams' games_played & games_won
-    if player1.team != player2.team:
-
-        player1.team.games_played = player1.team.games_played + 1
-        player2.team.games_played = player2.team.games_played + 1
-
-        if player1_win:
-            player1.team.games_won = player1.team.games_won + 1
-
-        if player2_win:
-            player2.team.games_won = player2.team.games_won + 1
-
-    db.session.add(game_record)
-    db.session.commit()
-
-    # add records to game_players table
-    gp_record1 = GamePlayer(game_id=game_record.game_id, player_id=player1_id)
-    gp_record2 = GamePlayer(game_id=game_record.game_id, player_id=player2_id)
-
-    db.session.add(gp_record1)
-    db.session.add(gp_record2)
-    db.session.commit()
+        return jsonify({"success": True})
+    except KeyError:
+        return jsonify({"error": "Missing required field"}), 400
+    except Exception as err:
+        return jsonify({"error": str(err)}), 400
 
 
 @app.route("/leaderboard", methods=["GET"])
 def show_leaderboard():
     """Show team and player rankings."""
 
-    players = Player.query.order_by(Player.games_won.desc()).all()
-    teams = Team.query.order_by(Team.games_won.desc()).all()
+    players = Player.query.all()
+    teams = Team.query.all()
 
     return render_template("leaderboard.html", players=players, teams=teams)
 
